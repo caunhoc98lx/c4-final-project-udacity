@@ -108,8 +108,7 @@ functions:
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
-        Resource:
-          - '*'
+        Resource: '*'
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements, and request schemas
@@ -135,8 +134,7 @@ functions:
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
-        Resource:
-          - '*'
+        Resource: '*'
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
   DeleteTodo:
@@ -154,13 +152,11 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:deleteItem
-        Resource:
-          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
-        Resource:
-          - '*'
+        Resource: '*'
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
@@ -183,19 +179,18 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - s3:PutObject
-        Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
       - Effect: Allow
         Action:
-          - dynamodb:updateItem
-        Resource:
-          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+          - s3:DeleteObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
-        Resource:
-          - '*'  
-      
+        Resource: '*'
+
 resources:
   Resources:
     RequestBodyValidator:
