@@ -65,6 +65,22 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:GetItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
+      - Effect: Allow
+        Action:
+          - xray:PutTelemetryRecords
+          - xray:PutTraceSegments
+        Resource: '*'
 
   # TODO: Configure this function -
   # Provide iamRoleStatements property. Decide the Actions and AWS Resource.
@@ -84,6 +100,16 @@ functions:
           documentation:
             summary: Create a new task
             description: Create a new task
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+        Resource:
+          - '*'
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements, and request schemas
@@ -101,6 +127,16 @@ functions:
           documentation:
             summary: Update a task
             description: Update a new task
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+        Resource:
+          - '*'
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
   DeleteTodo:
@@ -114,6 +150,17 @@ functions:
           documentation:
             summary: Delete a  task
             description: Delete a task
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:deleteItem
+        Resource:
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+        Resource:
+          - '*'
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
@@ -133,6 +180,22 @@ functions:
           path: todos/{todoId}/attachment/{imageId}
           cors: true
           authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+        Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:updateItem
+        Resource:
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+        Resource:
+          - '*'  
+      
 resources:
   Resources:
     RequestBodyValidator:
