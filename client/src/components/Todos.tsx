@@ -17,6 +17,7 @@ import {
 import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
+import { toast } from 'react-toastify'
 
 interface TodosProps {
   auth: Auth
@@ -37,7 +38,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ newTodoName: event.target.value })
+    this.setState({ newTodoName: event.target.value.trim() })
   }
 
   onEditButtonClick = (todoId: string) => {
@@ -47,16 +48,21 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
       const dueDate = this.calculateDueDate()
-      const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
-        dueDate
-      })
-      this.setState({
-        todos: [...this.state.todos, newTodo],
-        newTodoName: ''
-      })
+      if (this.state.newTodoName.trim()) {
+        const newTodo = await createTodo(this.props.auth.getIdToken(), {
+          name: this.state.newTodoName.trim(),
+          dueDate
+        })
+        this.setState({
+          todos: [...this.state.todos, newTodo],
+          newTodoName: ''
+        })
+        toast.success('Task created!')
+      } else {
+        toast.error("Task input can't blank. Please valid input!!!")
+      }
     } catch {
-      alert('Todo creation failed')
+      toast.error('Todo creation failed')
     }
   }
 
@@ -64,10 +70,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     try {
       await deleteTodo(this.props.auth.getIdToken(), todoId)
       this.setState({
-        todos: this.state.todos.filter(todo => todo.todoId !== todoId)
+        todos: this.state.todos.filter((todo) => todo.todoId !== todoId)
       })
     } catch {
-      alert('Todo deletion failed')
+      toast.error('Todo deletion failed')
     }
   }
 
@@ -85,7 +91,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         })
       })
     } catch {
-      alert('Todo deletion failed')
+      toast.error('Todo deletion failed')
     }
   }
 
@@ -97,7 +103,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         loadingTodos: false
       })
     } catch (e) {
-      alert(`Failed to fetch todos: ${(e as Error).message}`)
+      toast.error(`Failed to fetch todos: ${(e as Error).message}`)
     }
   }
 
@@ -127,6 +133,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             }}
             fluid
             actionPosition="left"
+            value={this.state.newTodoName}
             placeholder="To change the world..."
             onChange={this.handleNameChange}
           />

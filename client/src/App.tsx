@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { Link, Route, Router, Switch } from 'react-router-dom'
 import { Grid, Menu, Segment } from 'semantic-ui-react'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 import Auth from './auth/Auth'
 import { EditTodo } from './components/EditTodo'
@@ -36,6 +38,7 @@ export default class App extends Component<AppProps, AppState> {
   render() {
     return (
       <div>
+        <ToastContainer />
         <Segment style={{ padding: '8em 0em' }} vertical>
           <Grid container stackable verticalAlign="middle">
             <Grid.Row>
@@ -91,7 +94,7 @@ export default class App extends Component<AppProps, AppState> {
         <Route
           path="/"
           exact
-          render={props => {
+          render={(props) => {
             return <Todos {...props} auth={this.props.auth} />
           }}
         />
@@ -99,7 +102,7 @@ export default class App extends Component<AppProps, AppState> {
         <Route
           path="/todos/:todoId/edit"
           exact
-          render={props => {
+          render={(props) => {
             return <EditTodo {...props} auth={this.props.auth} />
           }}
         />
