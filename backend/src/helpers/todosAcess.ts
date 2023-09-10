@@ -11,6 +11,7 @@ import {
   generateAttachmentURL,
   getUploadUrl
 } from './attachmentUtils'
+import { FILTER } from '../lambda/utils'
 const AWSXRay = require('aws-xray-sdk')
 
 const XAWS = AWSXRay.captureAWS(AWS)
@@ -118,14 +119,26 @@ export class TodosAccess {
     logger.info(`Deleting Success`)
   }
 
-  async getAllTodosByUserId(userId: String): Promise<TodoItem[]> {
-    logger.info(`Start findByUserId:${userId}`)
+  async getAllTodosByUserId(
+    userId: String,
+    filter: string
+  ): Promise<TodoItem[]> {
+    logger.info(`Start findByUserId:${userId} and filter: ${filter}`)
 
     const params: any = {
       TableName: this.todoTable,
       KeyConditionExpression: '#todo_userId = :userId',
       ExpressionAttributeValues: { ':userId': userId },
       ExpressionAttributeNames: { '#todo_userId': 'userId' }
+    }
+
+    if (filter === FILTER.DONE) {
+      params.ExpressionAttributeValues = { ':userId': userId, ':done': true }
+      params.FilterExpression = 'done = :done'
+    }
+    if (filter === FILTER.TODO) {
+      params.ExpressionAttributeValues = { ':userId': userId, ':done': false }
+      params.FilterExpression = 'done = :done'
     }
 
     logger.info('End findByUserId params' + JSON.stringify(params))

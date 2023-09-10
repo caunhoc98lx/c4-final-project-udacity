@@ -11,13 +11,15 @@ import {
   Icon,
   Input,
   Image,
-  Loader
+  Loader,
+  Card
 } from 'semantic-ui-react'
 
 import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 import { toast } from 'react-toastify'
+import { FILTER } from '../config'
 
 interface TodosProps {
   auth: Auth
@@ -28,13 +30,15 @@ interface TodosState {
   todos: Todo[]
   newTodoName: string
   loadingTodos: boolean
+  filterStatus: string
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     newTodoName: '',
-    loadingTodos: true
+    loadingTodos: true,
+    filterStatus: FILTER.ALL
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,6 +81,15 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     }
   }
 
+  onChangeFilter = async (filter: string) => {
+    const todos = await getTodos(this.props.auth.getIdToken(), filter)
+    this.setState({
+      todos,
+      loadingTodos: false,
+      filterStatus: filter
+    })
+  }
+
   onTodoCheck = async (pos: number) => {
     try {
       const todo = this.state.todos[pos]
@@ -111,9 +124,29 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     return (
       <div>
         <Header as="h1">TODOs</Header>
-
         {this.renderCreateTodoInput()}
-
+        <h2 style={{ fontSize: 'bold' }}>Status</h2>
+        <Button
+          inverted
+          color="blue"
+          onClick={() => this.onChangeFilter(FILTER.ALL)}
+        >
+          {FILTER.ALL}
+        </Button>{' '}
+        <Button
+          inverted
+          color="olive"
+          onClick={() => this.onChangeFilter(FILTER.TODO)}
+        >
+          {FILTER.TODO}
+        </Button>{' '}
+        <Button
+          inverted
+          color="green"
+          onClick={() => this.onChangeFilter(FILTER.DONE)}
+        >
+          {FILTER.DONE}
+        </Button>
         {this.renderTodos()}
       </div>
     )
@@ -165,50 +198,81 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
 
   renderTodosList() {
     return (
-      <Grid padded>
-        {this.state.todos.map((todo, pos) => {
-          return (
-            <Grid.Row key={todo.todoId}>
-              <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onTodoCheck(pos)}
-                  checked={todo.done}
-                />
-              </Grid.Column>
-              <Grid.Column width={10} verticalAlign="middle">
-                {todo.name}
-              </Grid.Column>
-              <Grid.Column width={3} floated="right">
-                {todo.dueDate}
-              </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="blue"
-                  onClick={() => this.onEditButtonClick(todo.todoId)}
-                >
-                  <Icon name="pencil" />
-                </Button>
-              </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="red"
-                  onClick={() => this.onTodoDelete(todo.todoId)}
-                >
-                  <Icon name="delete" />
-                </Button>
-              </Grid.Column>
-              {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped />
-              )}
-              <Grid.Column width={16}>
-                <Divider />
-              </Grid.Column>
-            </Grid.Row>
-          )
-        })}
-      </Grid>
+      <>
+        <h2 style={{ paddingTop: '30px' }}>List task: </h2>
+        <Grid padded>
+          <Grid.Row columns={3}>
+            {this.state.todos.map((todo, pos) => {
+              return (
+                <Grid.Column columns={3} key={todo.todoId}>
+                  <Card key={todo.todoId}>
+                    {todo.attachmentUrl && (
+                      <Image
+                        src={todo.attachmentUrl}
+                        size="medium"
+                        wrapped
+                        ui={false}
+                      />
+                    )}
+                    <Card.Content>
+                      <Card.Header>
+                        <span>
+                          <Checkbox
+                            onChange={() => this.onTodoCheck(pos)}
+                            checked={todo.done}
+                          />
+                        </span>{' '}
+                        {todo.name}
+                      </Card.Header>
+                      <Card.Meta>
+                        <span className="date">{todo.dueDate}</span>
+                      </Card.Meta>
+                      <Card.Description>
+                        <span>Status: </span>{' '}
+                        {todo.done ? (
+                          <Button
+                            basic
+                            color="green"
+                            onClick={() => this.onChangeFilter(FILTER.DONE)}
+                          >
+                            {FILTER.DONE}
+                          </Button>
+                        ) : (
+                          <Button
+                            basic
+                            color="olive"
+                            onClick={() => this.onChangeFilter(FILTER.TODO)}
+                          >
+                            {FILTER.TODO}
+                          </Button>
+                        )}
+                      </Card.Description>
+                    </Card.Content>
+                    <Card.Content extra>
+                      <div className="ui two buttons">
+                        <Button
+                          icon
+                          color="blue"
+                          onClick={() => this.onEditButtonClick(todo.todoId)}
+                        >
+                          <Icon name="pencil" />
+                        </Button>
+                        <Button
+                          icon
+                          color="red"
+                          onClick={() => this.onTodoDelete(todo.todoId)}
+                        >
+                          <Icon name="delete" />
+                        </Button>
+                      </div>
+                    </Card.Content>
+                  </Card>
+                </Grid.Column>
+              )
+            })}
+          </Grid.Row>
+        </Grid>
+      </>
     )
   }
 

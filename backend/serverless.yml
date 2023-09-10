@@ -29,7 +29,7 @@ provider:
     ATTACHMENT_S3_BUCKET: sls-todos-app-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
-    AUTH_0_SECRET_FIELD: oYt1PcuKZB-3EbK0AGkDUKzT3h7Na1qcOpkrpV2Kx9qYal0d2lpIHVSrFnCvPODP
+    AUTH_0_SECRET_FIELD: zCO3TE535H9epmQZCaSPYP5KQBY54YlmItWIiddbp5HAOrA1CKeQQpwRdMBgloGO
 
   logs:
     # Enable API Gateway logs
@@ -160,6 +160,16 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
   RemoveAttachment:
     handler: src/lambda/http/removeAttachment.handler
     events:
